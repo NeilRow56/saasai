@@ -1,12 +1,7 @@
-import { UserButton } from "@clerk/nextjs";
-
-
-export default function Home() {
+export default function Dashboard() {
   return (
     <div className="p-4">
-    <p className="text-6xl text-green-600">Dashboard Page (Protected)</p>
-   <UserButton afterSignOutUrl='/' />
+      <p className="text-6xl text-green-600">Dashboard Page (Protected)</p>
     </div>
-    
   )
 }
