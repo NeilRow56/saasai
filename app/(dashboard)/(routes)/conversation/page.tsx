@@ -7,16 +7,19 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { CreateChatCompletionRequestMessage } from 'openai/resources/chat/index.mjs'
 
 import { Heading } from '@/components/Heading'
-
-import { formSchema } from './constants'
 import { Form, FormControl, FormField, FormItem } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { Empty } from '@/components/ui/empty'
 import { Button } from '@/components/ui/button'
-import { CreateChatCompletionRequestMessage } from 'openai/resources/chat/index.mjs'
 import { cn } from '@/lib/utils'
 
+import { formSchema } from './constants'
+import { Loader } from '@/components/Loader'
+import { UserAvatar } from '@/components/UserAvatar'
+import { BotAvatar } from '@/components/BotAvatar'
 //If you only need to export a single value from a module, or if the module represents a main feature of your application, use export default . If you need to export multiple values from a module, or if you want to organize your code into smaller, reusable components, use export with named exports.
 
 const Conversation = () => {
@@ -36,15 +39,19 @@ const Conversation = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const userMessage: CreateChatCompletionRequestMessage = { role: "user", content: values.prompt };
+      const userMessage: CreateChatCompletionRequestMessage = {
+        role: 'user',
+        content: values.prompt,
+      }
 
-      const newMessages = [...messages, userMessage];
+      const newMessages = [...messages, userMessage]
 
-      const response = await axios.post('/api/conversation', { messages: newMessages });
-      setMessages((current) => [...current, userMessage, response.data]);
-      
-      form.reset();
-      
+      const response = await axios.post('/api/conversation', {
+        messages: newMessages,
+      })
+      setMessages((current) => [...current, userMessage, response.data])
+
+      form.reset()
     } catch (error: any) {
       //TODO Open Pro Modal
       console.log(error)
@@ -108,16 +115,30 @@ const Conversation = () => {
           </Form>
         </div>
         <div className="space-y-4 mt-4">
-        <div className="flex flex-col-reverse gap-y-4">
+        { isLoading && (
+            <div className="p-8 rounded-lg w-full flex items-center justify-center bg-muted">
+              <Loader />
+            </div>
+          )}
+          {messages.length === 0 && !isLoading && (
+            <Empty label="No conversation started." />
+          )}
+          <div className="flex flex-col-reverse gap-y-4">
             {messages.map((message) => (
-              <div 
-                key={message.content} >
-                
+              <div
+              key={message.content}
+              className={cn(
+                "p-8 w-full flex items-start gap-x-8 rounded-lg",
+                message.role === "user" ? "bg-white border border-black/10" : "bg-muted",
+              )}
+            
+              >
+                 {message.role === "user" ? <UserAvatar /> : <BotAvatar />}
+                <p className="text-sm">
                   {message.content}
-                
+                </p>
               </div>
             ))}
-            
           </div>
         </div>
       </div>
